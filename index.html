@@ -1,4 +1,209 @@
+
 <!DOCTYPE html>
+
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruce TV - Reproductor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+           
+        
+        .clock {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #2EF527;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 100;
+            border: 1px solid rgba(0, 200, 255, 0.5);
+            box-shadow: 0 0 10px rgba(0, 150, 255, 0.3);
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        @keyframes livePulse {
+            0% { 
+                opacity: 0.6;
+                box-shadow: 0 0 5px #00f0ff;
+            }
+            50% { 
+                opacity: 1;
+                box-shadow: 0 0 12px #00f0ff;
+            }
+            100% { 
+                opacity: 0.6;
+                box-shadow: 0 0 5px #00f0ff;
+            }
+        }
+        
+        @keyframes bannerGlow {
+            0% {
+                box-shadow: 0 0 15px rgba(0, 150, 255, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(0, 200, 255, 0.7);
+            }
+        }
+    </style>
+  
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+           
+            <div class="logo-icon"></div>
+        </div>
+        
+        <div class="video-container">
+            <iframe id="videoPlayer" frameborder="0" allowfullscreen></iframe>
+            <div class="video-placeholder" id="placeholder">
+                
+            </div>
+        </div>
+        
+        <div class="banner" id="tvBanner">
+            <div class="live-indicator"></div>
+            
+        </div>
+        
+        <div class="clock" id="clockElement">00:00:00</div>
+    </div>
+    
+    <script>
+        // Actualizar reloj
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clockElement').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock();
+        
+        // Función para recibir comandos del panel de control
+        function receiveCommand(command, data) {
+            console.log("Comando recibido:", command, data);
+            
+            switch(command) {
+                case 'LOAD_CONTENT':
+                    loadContent(data.url);
+                    break;
+                case 'PLAY':
+                    playContent();
+                    break;
+                case 'PAUSE':
+                    pauseContent();
+                    break;
+                case 'STOP':
+                    stopContent();
+                    break;
+                case 'UPDATE_BANNER':
+                    updateBanner(data.text);
+                    break;
+                case 'SHOW_BANNER':
+                    showBanner();
+                    break;
+                case 'HIDE_BANNER':
+                    hideBanner();
+                    break;
+            }
+            
+            // Enviar confirmación al padre
+            window.parent.postMessage({
+                type: 'COMMAND_CONFIRMATION',
+                command: command,
+                status: 'success'
+            }, '*');
+        }
+        
+        // Cargar contenido en el reproductor
+        function loadContent(url) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const placeholder = document.getElementById('placeholder');
+            
+            videoPlayer.src = url;
+            placeholder.style.display = 'none';
+            videoPlayer.style.display = 'block';
+        }
+        
+        // Controlar la reproducción
+        function playContent() {
+            // En un reproductor real, aquí se enviaría un comando al iframe
+            console.log("Reproduciendo contenido");
+        }
+        
+        function pauseContent() {
+            // En un reproductor real, aquí se enviaría un comando al iframe
+            console.log("Contenido pausado");
+        }
+        
+        function stopContent() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const placeholder = document.getElementById('placeholder');
+            
+            videoPlayer.src = '';
+            videoPlayer.style.display = 'none';
+            placeholder.style.display = 'flex';
+        }
+        
+        // Controlar el banner
+        function updateBanner(text) {
+            document.getElementById('bannerText').textContent = text;
+        }
+        
+        function showBanner() {
+            document.getElementById('tvBanner').classList.add('visible');
+        }
+        
+        function hideBanner() {
+            document.getElementById('tvBanner').classList.remove('visible');
+        }
+        
+        // Escuchar mensajes del panel de control
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'CRUCE_TV_COMMAND') {
+                receiveCommand(event.data.command, event.data.data);
+            }
+        });
+        
+        // Notificar al padre que el reproductor está listo
+        window.addEventListener('load', function() {
+            window.parent.postMessage({
+                type: 'CRUCE_TV_READY'
+            }, '*');
+        });
+    </script>
+
+ <!DOCTYPE html>
 <html>
 <head>
   </div><div>
@@ -7,15 +212,15 @@
 </div></div>
 <title id="title"></title>
 <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
-<meta name="og:title" content="LA VUELTA A CASA RADIO" />
-<meta name="og:description" content="LA VUELTA A CASA RADIO - En Vivo!" />
-<meta name="keywords" content="LA VUELTA A CASA RADIO">
+<meta name="og:title" content="CONEXION TROPICAL" />
+<meta name="og:description" content="CONEXION TROPICAL - En Vivo!" />
+<meta name="keywords" content="CONEXION TROPICAL">
 <meta name="robots" content="index, follow">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="language" content="Spanish">
 <meta name="author" content="argentinastream.com">
-<meta name="og:image" content="logos/logo.png" />     
-<link rel="icon" type="image/png" href="logos/logo.png" sizes="200x200" /> 
+<meta name="og:image" content="https://conexiontropical.appradio.ar/icons/icon@192.png?v1" />     
+<link rel="icon" type="https://conexiontropical.appradio.ar/icons/icon@192.png?v1" href="https://conexiontropical.appradio.ar/icons/icon@192.png?v1" sizes="200x200" /> 
 <link href="" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/vegas/2.5.4/vegas.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
